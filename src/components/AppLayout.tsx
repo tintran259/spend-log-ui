@@ -8,10 +8,17 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { AppHeader } from './AppHeader';
 import { AppFooter } from './AppFooter';
+
+// Thứ tự swipe giữa 3 màn hình chính — định nghĩa 1 lần duy nhất ở đây
+const MAIN_SCREEN_ORDER = [
+  '/calendar',
+  '/',
+  '/report',
+] as const;
 
 const MIN_DISTANCE = 55;
 const MIN_VELOCITY = 0.3;
@@ -39,13 +46,22 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const { colors } = useTheme();
   const router     = useRouter();
+  const pathname   = usePathname();
+
+  // Auto-compute swipe routes from screen order if not explicitly provided
+  const screenIdx = MAIN_SCREEN_ORDER.indexOf(pathname as typeof MAIN_SCREEN_ORDER[number]);
+  const autoLeft  = screenIdx >= 0 ? MAIN_SCREEN_ORDER[screenIdx + 1] : undefined;
+  const autoRight = screenIdx >= 0 ? MAIN_SCREEN_ORDER[screenIdx - 1] : undefined;
+
+  const effectiveLeft  = swipeLeft  ?? autoLeft;
+  const effectiveRight = swipeRight ?? autoRight;
 
   // Stable refs so PanResponder closure always reads latest value
-  const leftRef     = useRef(swipeLeft);
-  const rightRef    = useRef(swipeRight);
+  const leftRef     = useRef(effectiveLeft);
+  const rightRef    = useRef(effectiveRight);
   const disabledRef = useRef(swipeDisabled);
-  leftRef.current     = swipeLeft;
-  rightRef.current    = swipeRight;
+  leftRef.current     = effectiveLeft;
+  rightRef.current    = effectiveRight;
   disabledRef.current = swipeDisabled;
 
   // Screen fade — fade in on mount, fade out before navigate
@@ -92,7 +108,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     }),
   ).current;
 
-  const swipeHandlers = (swipeLeft || swipeRight) ? panResponder.panHandlers : {};
+  const swipeHandlers = (effectiveLeft || effectiveRight) ? panResponder.panHandlers : {};
 
   const inner = (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]}>

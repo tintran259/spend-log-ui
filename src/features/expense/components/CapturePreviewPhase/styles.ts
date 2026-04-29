@@ -1,7 +1,12 @@
 import { StyleSheet } from 'react-native';
 import { CARD_MARGIN, CARD_WIDTH, CARD_HEIGHT, CARD_RADIUS } from '../../constants/captureLayout';
 
+// Action bar: paddingTop(16) + saveCircle(76) + paddingBottom(6) + gap(14)
+export const INPUT_ROW_DEFAULT_BOTTOM = 130;
+
 export const styles = StyleSheet.create({
+  flex: { flex: 1 },
+
   // ─── Photo card ────────────────────────────────────────────
   card: {
     alignSelf: 'center',
@@ -41,67 +46,57 @@ export const styles = StyleSheet.create({
     borderColor: 'rgba(34,197,94,0.55)',
   },
 
-  // ─── Timestamp overlay ────────────────────────────────────
-  timestampOverlay: {
+  // ─── Location overlay (inside card) ───────────────────────
+  locationOverlay: {
     position: 'absolute',
-    bottom: 90, right: 16,
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  timestampLocation: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '500',
-    textShadowColor: 'rgba(0,0,0,0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-    maxWidth: 160,
-  },
-  timestampDate: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '700',
-    textShadowColor: 'rgba(0,0,0,0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
-  timestampTime: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 13,
-    fontWeight: '500',
-    textShadowColor: 'rgba(0,0,0,0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-  },
-
-  // ─── Amount pill ──────────────────────────────────────────
-  amountPill: {
-    position: 'absolute',
-    bottom: 22,
-    alignSelf: 'center',
+    bottom: 14,
+    left: 14,
+    right: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.52)',
-    borderRadius: 32,
-    paddingHorizontal: 22,
-    paddingVertical: 13,
-    gap: 8,
-    minWidth: 170,
-    justifyContent: 'center',
+    gap: 4,
+  },
+  locationOverlayText: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 12,
+    fontWeight: '500',
+    flex: 1,
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+
+  // ─── Amount input — always absolute, animated bottom ──────
+  inputRowAbsolute: {
+    position: 'absolute',
+    left: CARD_MARGIN,
+    right: CARD_MARGIN,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    gap: 10,
   },
-  amountPillFilled: {
-    backgroundColor: 'rgba(99,102,241,0.75)',
-    borderColor: 'rgba(99,102,241,0.0)',
-  },
-  currencySign: { color: 'rgba(255,255,255,0.8)', fontSize: 17, fontWeight: '700' },
-  amountInput: {
-    color: '#fff',
-    fontSize: 18,
+  currencySign: {
+    fontSize: 20,
     fontWeight: '700',
-    minWidth: 80,
-    textAlign: 'center',
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  doneBtn: {
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
+  doneBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 
   // ─── Action bar ───────────────────────────────────────────
@@ -110,7 +105,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: CARD_MARGIN + 20,
-    paddingTop: 22,
+    paddingTop: 100,
     paddingBottom: 6,
   },
   sideActionBtn: {
@@ -133,5 +128,5 @@ export const styles = StyleSheet.create({
   saveCircleDisabled: { opacity: 0.6 },
 
   // ─── Loading label ────────────────────────────────────────
-  loadingLabel: { fontSize: 13, textAlign: 'center', marginTop: 4 },
+  loadingLabel: { fontSize: 13, textAlign: 'center', marginTop: 8 },
 });

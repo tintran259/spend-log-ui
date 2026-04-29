@@ -3,6 +3,7 @@ import { Animated, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
+import { AppLogo } from '@/components/AppLogo';
 import { styles } from './styles';
 
 const FEATURES: { icon: React.ComponentProps<typeof Ionicons>['name']; title: string; desc: string }[] = [
@@ -40,10 +41,11 @@ export const WelcomeScreen: React.FC = () => {
       <View style={[styles.circle, styles.circleBottom, { opacity: 0.08 }]} />
 
       <Animated.View style={[styles.logoBlock, fade(logoAnim)]}>
-        <View style={styles.logoBadge}>
-          <Ionicons name="camera" size={32} color={isDark ? '#818CF8' : '#fff'} />
+        <AppLogo size="lg" variant="light" />
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 12 }}>
+          <Text style={[styles.appName, { fontWeight: '300' }]}>Spend</Text>
+          <Text style={styles.appName}>Log</Text>
         </View>
-        <Text style={styles.appName}>MomentSave</Text>
       </Animated.View>
 
       <Animated.View style={[styles.titleBlock, fade(titleAnim)]}>
@@ -72,7 +74,7 @@ export const WelcomeScreen: React.FC = () => {
         <TouchableOpacity
           style={styles.ctaButton}
           activeOpacity={0.85}
-          onPress={() => router.push('/(auth)/enter-phone')}
+          onPress={() => router.push('/(auth)/login')}
         >
           <Text style={styles.ctaText}>Bắt đầu ngay</Text>
           <Ionicons name="arrow-forward" size={18} color={colors.primary} />

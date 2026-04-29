@@ -1,5 +1,6 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Expense } from '@/types/expense.types';
 import { styles } from './styles';
@@ -60,7 +61,9 @@ const DayCellComponent: React.FC<Props> = ({ day, expenses, onPress }) => {
         <Image
           source={{ uri: expenses[1].thumbnailUrl ?? expenses[1].imageUrl }}
           style={[styles.photo, styles.photoBack, { borderColor }]}
-          fadeDuration={0}
+          contentFit="cover"
+          cachePolicy="disk"
+          transition={0}
         />
       )}
 
@@ -68,7 +71,9 @@ const DayCellComponent: React.FC<Props> = ({ day, expenses, onPress }) => {
       <Image
         source={{ uri: frontUrl }}
         style={[styles.photo, styles.photoFront, { borderColor }]}
-        fadeDuration={0}
+        contentFit="cover"
+        cachePolicy="disk"
+        transition={0}
         onLoad={handleFrontLoad}
       />
 

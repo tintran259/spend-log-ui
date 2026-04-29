@@ -16,7 +16,7 @@ export const CameraPermission: React.FC<CameraPermissionProps> = ({ onRequestPer
       <Ionicons name="camera-outline" size={64} color={colors.primary} style={styles.icon} />
       <Text style={[styles.title, { color: colors.text }]}>Cần quyền camera</Text>
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        MomentSave cần camera để chụp khoảnh khắc chi tiêu
+        Spend Log cần camera để chụp khoảnh khắc chi tiêu
       </Text>
       <TouchableOpacity
         style={[styles.button, { backgroundColor: colors.primary }]}

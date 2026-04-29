@@ -23,11 +23,11 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     top: 0, left: 0, right: 0,
     height: 90,
-    backgroundColor: 'rgba(0,0,0,0.0)',
+    // backgroundColor: 'rgba(0,0,0,0.0)',
   },
   topScrimInner: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.38)',
+    // backgroundColor: 'rgba(0,0,0,0.38)',
   },
 
   // ─── Flash button ─────────────────────────────────────────
@@ -58,7 +58,7 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.5,
     color: 'rgba(255,255,255,0.75)',
   },
-  flashLabelOn:   { color: '#F59E0B' },
+  flashLabelOn: { color: '#F59E0B' },
   flashLabelAuto: { color: '#fff' },
 
   // ─── Bottom overlay (gradient sim) ────────────────────────
@@ -73,7 +73,7 @@ export const styles = StyleSheet.create({
   },
   bottomOverlayBg: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.42)',
+    // backgroundColor: 'rgba(0,0,0,0.42)',
   },
 
   // ─── Zoom pills ───────────────────────────────────────────

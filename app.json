@@ -1,20 +1,36 @@
 {
   "expo": {
-    "name": "MomentSave",
-    "slug": "momentsave",
+    "name": "Spend Log",
+    "slug": "spendlog",
+    "owner": "tintran",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "momentsave",
+    "scheme": "spendlog",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": false,
-      "bundleIdentifier": "com.momentsave.app"
+      "supportsTablet": true,
+      "bundleIdentifier": "com.spendlog.app",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.38422875346-ssfdpan6tpj2nsgv0ork8vvl6iuik7r7"
+            ]
+          }
+        ],
+        "LSApplicationQueriesSchemes": [
+          "fbapi",
+          "fb-messenger-share-api",
+          "fbauth2",
+          "fbshareextension"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#6366F1"
+        "backgroundColor": "#7C3AED"
       },
-      "package": "com.momentsave.app"
+      "package": "com.spendlog.app"
     },
     "plugins": [
       "expo-router",
@@ -23,9 +39,11 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "MomentSave dùng vị trí của bạn để hiển thị thời tiết địa phương."
+          "locationWhenInUsePermission": "Spend Log dùng vị trí của bạn để hiển thị thời tiết địa phương."
         }
-      ]
+      ],
+      "expo-web-browser",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true

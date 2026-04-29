@@ -10,13 +10,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUploadImage } from '../../hooks/useUploadImage';
 import { useCreateExpense } from '../../hooks/useCreateExpense';
+import { todayVNISO, formatVNDate } from '@/utils/date';
 import { styles } from './styles';
-
-const todayISO = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' });
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
-};
 const formatVND = (raw: string) => (raw ? Number(raw).toLocaleString('vi-VN') : '');
 
 export const CreateExpenseScreen: React.FC = () => {
@@ -27,7 +22,7 @@ export const CreateExpenseScreen: React.FC = () => {
   const [rawAmount, setRawAmount] = useState('');
   const [displayAmt, setDisplayAmt] = useState('');
   const [note, setNote] = useState('');
-  const [date] = useState(todayISO());
+  const [date] = useState(todayVNISO());
   const [amountError, setAmountError] = useState('');
 
   const noteRef = useRef<TextInput>(null);
@@ -172,7 +167,7 @@ export const CreateExpenseScreen: React.FC = () => {
             </View>
             <View style={styles.fieldBody}>
               <Text style={[styles.fieldLabel, { color: colors.textTertiary }]}>Ngày chi</Text>
-              <Text style={[styles.fieldValue, { color: colors.text }]}>{formatDate(date)}</Text>
+              <Text style={[styles.fieldValue, { color: colors.text }]}>{formatVNDate(date)}</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
           </TouchableOpacity>

@@ -22,7 +22,7 @@ export const useLogout = () => {
           ]);
           // Clear toàn bộ React Query cache — user mới sẽ không thấy data của user cũ
           queryClient.clear();
-          router.replace('/(auth)/enter-phone');
+          router.replace('/(auth)/login');
         },
       },
     ]);

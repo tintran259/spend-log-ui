@@ -16,7 +16,7 @@ export const CaptureTopBar: React.FC<CaptureTopBarProps> = ({ onSettingsPress, o
     <View style={[styles.topBar, { backgroundColor: colors.background }]}>
       <View style={[styles.centerPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Ionicons name="wallet-outline" size={15} color={colors.primary} style={{ marginRight: 6 }} />
-        <Text style={[styles.centerText, { color: colors.text }]}>MomentSave</Text>
+        <Text style={[styles.centerText, { color: colors.text }]}>Spend Log</Text>
       </View>
 
       <TouchableOpacity

@@ -1,3 +1,3 @@
-import { VerifyOtpScreen } from '@/features/auth/screens/VerifyOtpScreen';
+import { OtpVerificationScreen } from '@/features/auth/screens/OtpVerificationScreen';
 
-export default VerifyOtpScreen;
+export default OtpVerificationScreen;

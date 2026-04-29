@@ -1,10 +1,44 @@
-export interface SendOtpRequest {
-  phoneNumber: string;
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
 }
 
-export interface VerifyOtpRequest {
-  phoneNumber: string;
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface VerifyEmailRequest {
+  email: string;
   otp: string;
+}
+
+export interface ResendOtpRequest {
+  email: string;
+  purpose: 'VERIFY_EMAIL' | 'RESET_PASSWORD';
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface VerifyResetOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export interface ResetPasswordRequest {
+  resetToken: string;
+  newPassword: string;
+}
+
+export interface GoogleAuthRequest {
+  idToken: string;
+}
+
+export interface FacebookAuthRequest {
+  accessToken: string;
 }
 
 export interface RefreshTokenRequest {

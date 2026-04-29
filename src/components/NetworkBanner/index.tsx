@@ -15,8 +15,10 @@ export const NetworkBanner: React.FC = () => {
   const [bannerState, setBannerState] = useState<BannerState>('offline');
   const autoHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevConnected = useRef<boolean | null>(null);
+  const isShown = useRef(false);
 
   const slideIn = (top: number) => {
+    isShown.current = true;
     Animated.spring(translateY, {
       toValue: top,
       damping: 18,
@@ -30,9 +32,15 @@ export const NetworkBanner: React.FC = () => {
       toValue: -BANNER_HEIGHT - 20,
       duration: 260,
       useNativeDriver: true,
-    }).start(() => {
-      setShouldRender(false);
-      onDone?.();
+    }).start(({ finished }) => {
+      if (finished) {
+        isShown.current = false;
+        if (onDone) {
+          onDone();
+        } else {
+          setShouldRender(false);
+        }
+      }
     });
   };
 
@@ -48,17 +56,25 @@ export const NetworkBanner: React.FC = () => {
     }
 
     if (!isConnected) {
+      translateY.stopAnimation();
       setBannerState('offline');
       setShouldRender(true);
       slideIn(insets.top + 8);
     } else if (wasOffline) {
-      setBannerState('online');
-      setShouldRender(true);
-      slideIn(insets.top + 8);
+      const top = insets.top + 8;
+      const showOnlineBanner = () => {
+        setBannerState('online');
+        setShouldRender(true);
+        slideIn(top);
+        autoHideTimer.current = setTimeout(() => slideOut(), 2500);
+      };
 
-      autoHideTimer.current = setTimeout(() => {
-        slideOut();
-      }, 2500);
+      if (isShown.current) {
+        // Offline banner is visible — slide it out first, then slide in online banner
+        slideOut(showOnlineBanner);
+      } else {
+        showOnlineBanner();
+      }
     }
 
     return () => {

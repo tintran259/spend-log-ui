@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  Design System — MomentSave
+//  Design System — Spend Log
 //
 //  Light  → Apple-inspired warm-neutral surfaces + Violet-600 primary
 //  Dark   → True-dark AMOLED base + Violet-400 primary

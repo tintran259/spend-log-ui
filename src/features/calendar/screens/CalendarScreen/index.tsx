@@ -54,7 +54,7 @@ export const CalendarScreen: React.FC = () => {
   ), []);
 
   return (
-    <AppLayout swipeLeft="/(protected)" swipeDisabled={viewerIndex !== null}>
+    <AppLayout swipeDisabled={viewerIndex !== null}>
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" />

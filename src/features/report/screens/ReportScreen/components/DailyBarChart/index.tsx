@@ -63,11 +63,8 @@ export const DailyBarChart: React.FC<Props> = ({ report }) => {
               outputRange: [0, targetW],
             });
 
-            // Parse YYYY-MM-DD directly — avoids UTC-to-local shift from Date constructor
-            const date = new Date(d.date);
-            const day = String(date.getDate()).padStart(2, "0");
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const dateLabel = `${day}/${month}`;
+            const [, mm, dd] = d.date.split('-');
+            const dateLabel = `${dd}/${mm}`;
 
             return (
               <View key={`${d.date}-${i}`} style={styles.barRow}>

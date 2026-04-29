@@ -12,6 +12,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { CameraPermission } from '../../components/CameraPermission';
 import { CapturePreviewPhase } from '../../components/CapturePreviewPhase';
 import { AppLayout } from '@/components/AppLayout';
+import { todayVNISO } from '@/utils/date';
 import { styles } from './styles';
 
 type Phase = 'camera' | 'preview';
@@ -29,8 +30,6 @@ const FLASH_CONFIG: Record<'off' | 'auto' | 'on', { icon: React.ComponentProps<t
   auto: { icon: 'flash', label: 'AUTO' },
   on: { icon: 'flash', label: 'ON' },
 };
-
-const todayISO = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' });
 
 export const CaptureScreen: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('camera');
@@ -145,7 +144,7 @@ export const CaptureScreen: React.FC = () => {
           imageUrl,
           thumbnailUrl,
           amount,
-          expenseDate: todayISO(),
+          expenseDate: todayVNISO(),
           latitude: photoMeta?.coords?.latitude,
           longitude: photoMeta?.coords?.longitude,
           locationName: locationName ?? undefined,
@@ -194,7 +193,7 @@ export const CaptureScreen: React.FC = () => {
   const isAuto = flash === 'auto';
 
   return (
-    <AppLayout swipeLeft="/(protected)/report" swipeRight="/(protected)/calendar">
+    <AppLayout>
       {/* ── Camera Card ── */}
       <View style={styles.card}>
         <CameraView

@@ -13,7 +13,6 @@ import { DailyBarChart } from './components/DailyBarChart';
 import { TopExpenseCard } from './components/TopExpenseCard';
 import { StatsGrid } from './components/StatsGrid';
 import { styles } from './styles';
-import { FilterReport } from './components/FilterReport';
 
 export const ReportScreen: React.FC = () => {
   const { colors } = useTheme();
@@ -82,20 +81,19 @@ export const ReportScreen: React.FC = () => {
   };
 
   // ── Loading / empty guards ────────────────────────────────────────────────
-  // Only show skeleton during the very first load (before we know which month to render).
-  // Do NOT include reportLoading here — hiding the Animated.View mid-animation causes
-  // the opacity to get stuck at 0 when the view remounts on iOS native driver.
-  if (!months || selectedIdx < 0) {
+  // months === undefined → still fetching → skeleton
+  if (!months) {
     return (
-      <AppLayout swipeRight="/(protected)">
+      <AppLayout>
         <ReportSkeleton />
       </AppLayout>
     );
   }
 
+  // months loaded but empty (new account, no expenses yet)
   if (months.length === 0) {
     return (
-      <AppLayout swipeRight="/(protected)">
+      <AppLayout>
         <View style={styles.emptyContainer}>
           <Text style={{ color: colors.textSecondary }}>Chưa có khoản chi nào</Text>
         </View>
@@ -103,8 +101,17 @@ export const ReportScreen: React.FC = () => {
     );
   }
 
+  // months loaded and non-empty but selectedIdx not resolved yet → skeleton
+  if (selectedIdx < 0) {
+    return (
+      <AppLayout>
+        <ReportSkeleton />
+      </AppLayout>
+    );
+  }
+
   return (
-    <AppLayout swipeRight="/(protected)">
+    <AppLayout>
       {/* ── Month navigator ─────────────────────────────────────────────── */}
       <View style={[styles.monthNav, { borderBottomColor: colors.border }]}>
         <View style={styles.monthNavCenter}>

@@ -14,10 +14,14 @@ export default function ProtectedLayout() {
   if (isAuthenticated === null) return null;
 
   if (!isAuthenticated) {
-    return <Redirect href="/(auth)/enter-phone" />;
+    return <Redirect href="/(auth)/login" />;
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
+      <Stack.Screen name="index" options={{ gestureEnabled: false }} />
+      <Stack.Screen name="calendar" options={{ gestureEnabled: false }} />
+      <Stack.Screen name="report" options={{ gestureEnabled: false }} />
+    </Stack>
   );
 }

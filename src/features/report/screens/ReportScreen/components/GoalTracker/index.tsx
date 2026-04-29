@@ -21,6 +21,9 @@ export const GoalTracker: React.FC<Props> = ({ report, year }) => {
   const router = useRouter();
   const { data: stats } = useReportStatistics();
 
+  console.log("report:", report);
+
+
   const todayAnim = useRef(new Animated.Value(0)).current;
   const monthAnim = useRef(new Animated.Value(0)).current;
   const yearAnim = useRef(new Animated.Value(0)).current;

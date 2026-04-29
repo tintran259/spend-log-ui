@@ -1,8 +1,7 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   FlatList,
-  Image,
   Modal,
   StyleSheet,
   Text,
@@ -10,6 +9,7 @@ import {
   View,
   ViewToken,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Expense } from '@/types/expense.types';
 import { styles, CARD_W, PEEK, THUMB_STRIDE, THUMB_H_PAD } from './styles';
@@ -23,7 +23,12 @@ function parseDateLabel(dateStr: string): { year: string; dayLabel: string } {
   return { year: String(y), dayLabel: `tháng ${m} ${DOW_VI[dow]}` };
 }
 
-// ── Thumbnail item (memoised — interpolations created once per mount) ─────────
+// Append Cloudinary transform without breaking the URL structure
+function cloudinaryTransform(url: string, transform: string): string {
+  return url.replace('/upload/', `/upload/${transform}/`);
+}
+
+// ── Thumbnail item ────────────────────────────────────────────────────────────
 interface ThumbItemProps {
   exp: Expense;
   idx: number;
@@ -56,44 +61,34 @@ const ThumbItem = memo<ThumbItemProps>(({ exp, idx, animIndex, onPress }) => {
     }),
   ).current;
 
+  const thumbSrc = exp.thumbnailUrl ?? exp.imageUrl;
+
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
       <Animated.View style={[styles.thumbBox, { transform: [{ scale }], opacity }]}>
-        <Image source={{ uri: exp.imageUrl }} style={styles.thumbImg} fadeDuration={0} />
+        <Image
+          source={{ uri: thumbSrc }}
+          style={styles.thumbImg}
+          contentFit="cover"
+          cachePolicy="disk"
+          transition={0}
+        />
         <Animated.View style={[StyleSheet.absoluteFill, styles.thumbBorder, { opacity: borderOpacity }]} />
       </Animated.View>
     </TouchableOpacity>
   );
 });
 
-// ── Photo card with per-image skeleton ────────────────────────────────────────
+// ── Photo card — progressive: thumbnail → full-res ────────────────────────────
 interface PhotoItemProps {
   item: Expense;
   photoScale: Animated.Value;
   photoOpacity: Animated.Value;
-  forceLoading: boolean;
 }
 
-const PhotoItem = memo<PhotoItemProps>(({ item, photoScale, photoOpacity, forceLoading }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const skeletonAnim = useRef(new Animated.Value(0.55)).current;
-
-  const showSkeleton = forceLoading || !imageLoaded;
-
-  useEffect(() => {
-    if (showSkeleton) {
-      skeletonAnim.setValue(0.55);
-      const anim = Animated.loop(
-        Animated.sequence([
-          Animated.timing(skeletonAnim, { toValue: 0.9, duration: 700, useNativeDriver: true }),
-          Animated.timing(skeletonAnim, { toValue: 0.55, duration: 700, useNativeDriver: true }),
-        ]),
-      );
-      anim.start();
-      return () => anim.stop();
-    }
-    Animated.timing(skeletonAnim, { toValue: 0, duration: 220, useNativeDriver: true }).start();
-  }, [showSkeleton]);
+const PhotoItem = memo<PhotoItemProps>(({ item, photoScale, photoOpacity }) => {
+  const thumbUrl = item.thumbnailUrl ?? item.imageUrl;
+  const fullUrl  = item.imageUrl;
 
   return (
     <View style={styles.photoPage}>
@@ -102,15 +97,13 @@ const PhotoItem = memo<PhotoItemProps>(({ item, photoScale, photoOpacity, forceL
       >
         <View style={styles.photoContainer}>
           <Image
-            source={{ uri: item.imageUrl }}
+            source={{ uri: fullUrl }}
+            placeholder={{ uri: thumbUrl }}
             style={styles.photo}
-            resizeMode="cover"
-            fadeDuration={0}
-            onLoad={() => setImageLoaded(true)}
-          />
-          <Animated.View
-            pointerEvents="none"
-            style={[StyleSheet.absoluteFill, styles.photoSkeleton, { opacity: skeletonAnim }]}
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={{ duration: 200, effect: 'cross-dissolve' }}
+            placeholderContentFit="cover"
           />
         </View>
         <View style={styles.captionRow}>
@@ -137,26 +130,29 @@ export const PhotoViewerModal: React.FC<PhotoViewerModalProps> = ({
   onClose,
 }) => {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
-  const [isModalLoading, setIsModalLoading] = useState(false);
 
-  const listRef = useRef<FlatList>(null);
+  const listRef      = useRef<FlatList>(null);
   const thumbListRef = useRef<FlatList>(null);
-
-  // Prevents onViewableItemsChanged from animated-scrolling thumbs before init
   const hasInitialized = useRef(false);
 
   const { year, dayLabel } = parseDateLabel(
     expenses[activeIndex]?.expenseDate ?? expenses[0].expenseDate,
   );
 
-  const bgOpacity = useRef(new Animated.Value(0)).current;
+  const bgOpacity    = useRef(new Animated.Value(0)).current;
   const photoOpacity = useRef(new Animated.Value(0)).current;
-  const photoScale = useRef(new Animated.Value(0.88)).current;
+  const photoScale   = useRef(new Animated.Value(0.88)).current;
   const headerTransY = useRef(new Animated.Value(-24)).current;
-  const stripTransY = useRef(new Animated.Value(40)).current;
-  const animIndex = useRef(new Animated.Value(initialIndex)).current;
+  const stripTransY  = useRef(new Animated.Value(40)).current;
+  const animIndex    = useRef(new Animated.Value(initialIndex)).current;
 
-  // ── Animate animIndex on swipe ────────────────────────────────────────────
+  // Tiny Cloudinary version for blur background (~3 KB instead of 2 MB)
+  const blurBgUrl = useMemo(() => {
+    const url = expenses[activeIndex]?.imageUrl ?? '';
+    return url.includes('/upload/') ? cloudinaryTransform(url, 'w_80,q_10') : url;
+  }, [expenses, activeIndex]);
+
+  // Animate animIndex on swipe
   useEffect(() => {
     Animated.spring(animIndex, {
       toValue: activeIndex,
@@ -166,7 +162,18 @@ export const PhotoViewerModal: React.FC<PhotoViewerModalProps> = ({
     }).start();
   }, [activeIndex]);
 
-  // ── Open / close ──────────────────────────────────────────────────────────
+  // Prefetch adjacent images whenever active index changes
+  useEffect(() => {
+    [-1, 1, 2].forEach(offset => {
+      const exp = expenses[activeIndex + offset];
+      if (exp) {
+        Image.prefetch(exp.imageUrl);
+        if (exp.thumbnailUrl) Image.prefetch(exp.thumbnailUrl);
+      }
+    });
+  }, [activeIndex, expenses]);
+
+  // Open / close
   useEffect(() => {
     if (!visible) {
       hasInitialized.current = false;
@@ -181,10 +188,13 @@ export const PhotoViewerModal: React.FC<PhotoViewerModalProps> = ({
     animIndex.setValue(initialIndex);
     setActiveIndex(initialIndex);
 
-    // Snap main list immediately; centre thumbnail with viewPosition:0.5
-    // getItemLayout means FlatList can scroll without measuring — no flicker
+    // Prefetch all images in the day's list immediately on open
+    expenses.forEach(exp => {
+      Image.prefetch(exp.imageUrl);
+      if (exp.thumbnailUrl) Image.prefetch(exp.thumbnailUrl);
+    });
+
     setTimeout(() => {
-      // scrollToOffset keeps the PEEK-based layout intact (snap positions = n*CARD_W)
       listRef.current?.scrollToOffset({ offset: initialIndex * CARD_W, animated: false });
       thumbListRef.current?.scrollToIndex({
         index: initialIndex,
@@ -195,27 +205,25 @@ export const PhotoViewerModal: React.FC<PhotoViewerModalProps> = ({
     }, 30);
 
     Animated.parallel([
-      Animated.timing(bgOpacity, { toValue: 1, duration: 260, useNativeDriver: true }),
+      Animated.timing(bgOpacity,    { toValue: 1, duration: 260, useNativeDriver: true }),
       Animated.timing(photoOpacity, { toValue: 1, duration: 220, useNativeDriver: true }),
-      Animated.spring(photoScale, { toValue: 1, damping: 18, stiffness: 200, useNativeDriver: true }),
+      Animated.spring(photoScale,   { toValue: 1, damping: 18, stiffness: 200, useNativeDriver: true }),
       Animated.spring(headerTransY, { toValue: 0, damping: 18, stiffness: 200, useNativeDriver: true }),
-      Animated.spring(stripTransY, { toValue: 0, damping: 18, stiffness: 200, useNativeDriver: true }),
+      Animated.spring(stripTransY,  { toValue: 0, damping: 18, stiffness: 200, useNativeDriver: true }),
     ]).start();
   }, [visible, initialIndex]);
 
   const handleClose = () => {
     Animated.parallel([
-      Animated.timing(bgOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+      Animated.timing(bgOpacity,    { toValue: 0, duration: 200, useNativeDriver: true }),
       Animated.timing(photoOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
-      Animated.spring(photoScale, { toValue: 0.9, damping: 20, stiffness: 260, useNativeDriver: true }),
+      Animated.spring(photoScale,   { toValue: 0.9, damping: 20, stiffness: 260, useNativeDriver: true }),
       Animated.timing(headerTransY, { toValue: -20, duration: 180, useNativeDriver: true }),
-      Animated.timing(stripTransY, { toValue: 40, duration: 180, useNativeDriver: true }),
+      Animated.timing(stripTransY,  { toValue: 40, duration: 180, useNativeDriver: true }),
     ]);
-    onClose()
+    onClose();
   };
 
-  // Guard prevents the FlatList's own initial-layout scroll from triggering
-  // an animated thumb scroll before we've done the silent snap above.
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
       if (!hasInitialized.current || viewableItems.length === 0) return;
@@ -234,23 +242,16 @@ export const PhotoViewerModal: React.FC<PhotoViewerModalProps> = ({
 
   const renderPhoto = useCallback(
     ({ item }: { item: Expense }) => (
-      <PhotoItem
-        item={item}
-        photoScale={photoScale}
-        photoOpacity={photoOpacity}
-        forceLoading={isModalLoading}
-      />
+      <PhotoItem item={item} photoScale={photoScale} photoOpacity={photoOpacity} />
     ),
-    [isModalLoading],
+    [],
   );
 
-  // PEEK padding shifts items: item-n left edge is at PEEK + n*CARD_W in content coords
   const photoItemLayout = useCallback(
     (_: unknown, index: number) => ({ length: CARD_W, offset: PEEK + index * CARD_W, index }),
     [],
   );
 
-  // Thumbnail FlatList getItemLayout — offset must include the horizontal padding
   const thumbItemLayout = useCallback(
     (_: unknown, index: number) => ({
       length: THUMB_STRIDE,
@@ -281,17 +282,16 @@ export const PhotoViewerModal: React.FC<PhotoViewerModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
 
-      {/* ── Background: always-dark base + blurred focused photo ──────────── */}
+      {/* ── Background: always-dark base + blurred tiny photo ─────────────── */}
       <View style={[StyleSheet.absoluteFill, styles.bgBase]} />
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: bgOpacity }]}>
         <Image
-          source={{ uri: expenses[activeIndex]?.imageUrl ?? '' }}
+          source={{ uri: blurBgUrl }}
           style={StyleSheet.absoluteFill}
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="disk"
           blurRadius={22}
-          fadeDuration={0}
         />
-        {/* Darken overlay so the card floats above the blur */}
         <View style={[StyleSheet.absoluteFill, styles.bgOverlay]} />
       </Animated.View>
 
@@ -330,7 +330,6 @@ export const PhotoViewerModal: React.FC<PhotoViewerModalProps> = ({
           maxToRenderPerBatch={3}
           windowSize={5}
           removeClippedSubviews
-          extraData={isModalLoading}
         />
 
         {/* ── Thumbnail strip ─────────────────────────────────────────────── */}
